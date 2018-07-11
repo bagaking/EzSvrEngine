@@ -1,0 +1,7 @@
+language: csharp
+dotnet: 2.1
+
+solution: src/EzSvrEngine.sln
+
+install:
+ - nuget restore src/EzSvrEngine.sln
