@@ -134,9 +134,9 @@ namespace EzSvrEngine.Sched {
                 await ctx.RecordAlive();
 
                 if (!Enabled) return;
-                
 
-                
+
+
                 await OnUpdate(ctx);
 
                 if (!await ctx.SetCurrentStatus(PerformContext.Status.Started)) return; // 尝试标记开始, 如果已经开始，退出  
@@ -161,7 +161,7 @@ namespace EzSvrEngine.Sched {
 
         protected virtual async Task<bool> OnUpdate(PerformContext context) {
             return true;
-        } 
-         
+        }
+
     }
 }

@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssemblyName>EzSvrEngine</AssemblyName>
     <RootNamespace>EzSvrEngine</RootNamespace>
+    <Authors>bagaking</Authors>
   </PropertyGroup>
 
   <ItemGroup>

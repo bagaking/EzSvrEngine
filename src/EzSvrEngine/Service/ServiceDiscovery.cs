@@ -96,7 +96,7 @@ namespace EzSvrEngine.Service {
                         default: continue;
                     }
                     var discover_name = GetDiscoverName(actor.GetNameKey(actor.ActorID.ToString()));
-                    await _redis.HashSetAsync(discover_name, (await ActorService.FromActor(actor))?.GetServiceInfo());
+                    await _redis.HashSetAsync(discover_name, ActorService.FromActor(actor)?.GetServiceInfo());
                     await _redis.KeyExpireAsync(discover_name, TimeSpan.FromSeconds(7));
                 }
 
