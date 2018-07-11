@@ -1,5 +1,7 @@
 EzSvrEngine
 
+[![Build Status](https://travis-ci.org/bagaking/EzSvrEngine.svg?branch=master)](https://travis-ci.org/bagaking/EzSvrEngine)
+
 > published at https://www.nuget.org/packages/EzSvrEngine/
 
 # install by nuget 
