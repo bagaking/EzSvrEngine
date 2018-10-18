@@ -29,16 +29,18 @@ namespace EzSvrEngine.Extension {
         }
 
         /// <summary>
-        /// 按 key 加锁, 并不是分布式锁, 没有CAS操作
+        /// 按 key 加锁, 并不是分布式锁, 没有CAS操作, 锁后加检查
         /// 没锁上或者锁已经存在都会返回false
         /// </summary>
         /// <returns></returns>
         public static async Task<bool> TryLockKey(this IDatabase _redis, string key, TimeSpan? expi_time_span = null) {
+            var rand_hash = DateTime.UtcNow.ToString() + "_" + EzSvrEngine.Utils.Random.RandUInt32();
             var lock_state = await _redis.StringGetAsync(key);
             if (!lock_state.IsNullOrEmpty && (string)lock_state != "__unlock__") {
                 return false;
             }
-            return await _redis.StringSetAsync(key, DateTime.UtcNow.ToString(), expi_time_span);
+            var result = await _redis.StringSetAsync(key, rand_hash, expi_time_span);
+            return !((!result) || !(rand_hash == await _redis.StringGetAsync(key)));
         }
 
         /// <summary>
@@ -80,14 +82,20 @@ namespace EzSvrEngine.Extension {
             return Tuple.Create(true, JsonConvert.DeserializeObject<TMsgType>(value));
         }
 
-        public static async Task<Tuple<bool, string>> ExpirationMqPop(this IDatabase redis, string key) {
-            key = $"rmq:{key}";
-            var value = await redis.ListRightPopAsync(key);
-            if (value.IsNullOrEmpty) return Tuple.Create(false, "");
+        public static async Task<Tuple<bool, string>> ExpirationMqPop(this IDatabase redis, string key) {            
+            
+            try {
+                key = $"rmq:{key}";
+                var value = await redis.ListRightPopAsync(key);
+                if (value.IsNullOrEmpty) return Tuple.Create(false, "");
+                if (await redis.ListLengthAsync(key) <= 0) await redis.KeyExpireAsync(key, TimeSpan.FromHours(1)); //如果消息队列已经清空, 一小时过期
 
-            if (await redis.ListLengthAsync(key) <= 0) await redis.KeyExpireAsync(key, TimeSpan.FromHours(1)); //如果消息队列已经清空, 一小时过期
-
-            return Tuple.Create(true, (string)value);
+                return Tuple.Create(true, (string)value);
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+                return Tuple.Create(false, "");
+            }
         }
 
         public static async Task<long> ExpirationMqLength(this IDatabase redis, string key) {
